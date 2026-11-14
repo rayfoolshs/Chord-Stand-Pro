@@ -38,6 +38,7 @@ import { convertOverLyricsToChordPro, parseChart } from './lib/chartParser';
 import { initDriveAuth } from './lib/googleDrive';
 import { CHORD_TOKEN_RE, getTargetKey, semitoneDiff, transposeChord } from './lib/musicTheory';
 import { DEMO_SONGS, idbAll, idbDel, idbGet, idbPut, openDB, safeGetStorage, safeSetStorage, uid } from './lib/storage';
+import { takeUgImportFromUrl } from './lib/ugImport';
 import { MediaAttachment, Setlist, Song, StageSyncPayload } from './types/chordstand';
 
 function lerpColor(hexA: string, hexB: string, t: number): string {
@@ -122,6 +123,8 @@ export default function App() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [incomingUg, setIncomingUg] = useState<{ text: string; token: number } | null>(null);
+  const ugTokenRef = useRef(0);
   const [syncOpen, setSyncOpen] = useState(false);
   const [driveOpen, setDriveOpen] = useState(false);
   const [dialog, setDialog] = useState<DialogConfig | null>(null);
@@ -189,6 +192,22 @@ export default function App() {
     }
     return false;
   }, [locked, showToast]);
+
+  // A UG bookmarklet opens the app with the chart in the URL fragment. Consume
+  // it here, then open the import preview; nothing is saved until the user
+  // confirms. `hashchange` also covers a bookmarklet that reuses this tab.
+  useEffect(() => {
+    const ingest = () => {
+      const payload = takeUgImportFromUrl();
+      if (!payload) return;
+      ugTokenRef.current += 1;
+      setIncomingUg({ text: payload, token: ugTokenRef.current });
+      setImportOpen(true);
+    };
+    ingest();
+    window.addEventListener('hashchange', ingest);
+    return () => window.removeEventListener('hashchange', ingest);
+  }, []);
 
   // Apply day/night theme and chart CSS vars
   useEffect(() => {
@@ -1761,6 +1780,7 @@ export default function App() {
           onClose={() => setImportOpen(false)}
           onImported={mergeImported}
           onToast={showToast}
+          incomingUg={incomingUg}
         />
 
         <SyncModal
