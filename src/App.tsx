@@ -38,6 +38,16 @@ import { convertOverLyricsToChordPro, parseChart } from './lib/chartParser';
 import { initDriveAuth } from './lib/googleDrive';
 import { CHORD_TOKEN_RE, getTargetKey, semitoneDiff, transposeChord } from './lib/musicTheory';
 import { DEMO_SONGS, idbAll, idbDel, idbGet, idbPut, openDB, safeGetStorage, safeSetStorage, uid } from './lib/storage';
+import {
+  attachStageHeartbeat,
+  isRetryablePeerError,
+  isStageState,
+  peerErrorType,
+  reconnectDelayMs,
+  stagePeerId,
+  stagePeerOptions,
+  tryReconnectSignalling,
+} from './lib/stageSync';
 import { takeUgImportFromUrl } from './lib/ugImport';
 import { MediaAttachment, Setlist, Song, StageSyncPayload } from './types/chordstand';
 
@@ -155,6 +165,21 @@ export default function App() {
   const peerRef = useRef<Peer | null>(null);
   const hostConnsRef = useRef<DataConnection[]>([]);
   const clientConnRef = useRef<DataConnection | null>(null);
+  // Hotspot/Wi-Fi blip recovery: heartbeats on each channel, a backoff retry
+  // loop, and the last role/PIN to rejoin with.
+  const heartbeatStopsRef = useRef<Array<() => void>>([]);
+  const reconnectRef = useRef<{ auto: boolean; attempts: number; timer: number | null }>({
+    auto: false,
+    attempts: 0,
+    timer: null,
+  });
+  const lastSessionRef = useRef<{ role: 'host' | 'client'; pin: string } | null>(null);
+  const clientLinkedRef = useRef(false);
+  const tearingDownRef = useRef(false);
+  const peerHandlersRef = useRef<{ host: (pin?: string) => void; join: (pin: string) => void }>({
+    host: () => {},
+    join: () => {},
+  });
   const suppressScrollBroadcastRef = useRef(false);
   const peerScrollTimerRef = useRef<number | null>(null);
   const followScrollRef = useRef(followScroll);
@@ -508,38 +533,109 @@ export default function App() {
   };
 
   // PeerJS Stage Sync Handlers
-  const stopPeerSession = useCallback(() => {
-    if (peerRef.current) {
+  const teardownPeer = useCallback(() => {
+    tearingDownRef.current = true;
+    heartbeatStopsRef.current.forEach((stop) => stop());
+    heartbeatStopsRef.current = [];
+    hostConnsRef.current.forEach((conn) => {
       try {
-        peerRef.current.destroy();
+        conn.close();
       } catch {
-        // Ignore cleanup errors
+        // Already closed.
+      }
+    });
+    hostConnsRef.current = [];
+    try {
+      clientConnRef.current?.close();
+    } catch {
+      // Already closed.
+    }
+    clientConnRef.current = null;
+    const peer = peerRef.current;
+    peerRef.current = null;
+    if (peer) {
+      try {
+        peer.destroy();
+      } catch {
+        // Already destroyed.
       }
     }
-    peerRef.current = null;
-    hostConnsRef.current = [];
-    clientConnRef.current = null;
-    setPeerMode(null);
-    setHostPin(null);
     setConnectedCount(0);
+    tearingDownRef.current = false;
   }, []);
 
+  const clearPeerReconnect = useCallback(() => {
+    const state = reconnectRef.current;
+    if (state.timer !== null) {
+      window.clearTimeout(state.timer);
+      state.timer = null;
+    }
+  }, []);
+
+  /**
+   * Retry with a short exponential backoff so a hotspot blip or Wi-Fi hand-off
+   * does not end the session. "Disconnect" turns the automatic retry off.
+   */
+  const schedulePeerReconnect = useCallback(() => {
+    const state = reconnectRef.current;
+    if (!state.auto || state.timer !== null) return;
+    if (!lastSessionRef.current) return;
+
+    state.attempts += 1;
+    const delay = reconnectDelayMs(state.attempts);
+    state.timer = window.setTimeout(() => {
+      state.timer = null;
+      const session = lastSessionRef.current;
+      if (!reconnectRef.current.auto || !session) return;
+      if (session.role === 'host') peerHandlersRef.current.host(session.pin);
+      else peerHandlersRef.current.join(session.pin);
+    }, delay);
+  }, []);
+
+  const stopPeerSession = useCallback(() => {
+    reconnectRef.current.auto = false;
+    reconnectRef.current.attempts = 0;
+    clearPeerReconnect();
+    lastSessionRef.current = null;
+    clientLinkedRef.current = false;
+    teardownPeer();
+    setPeerMode(null);
+    setHostPin(null);
+    setJoinStatus('');
+  }, [clearPeerReconnect, teardownPeer]);
+
   const startPeerHost = useCallback(
-    (retry = 0) => {
-      stopPeerSession();
-      const pin = String(Math.floor(1000 + Math.random() * 9000));
-      const peer = new Peer(`chordstand-pro-${pin}`);
+    (retry = 0, pinOverride?: string) => {
+      teardownPeer();
+      const pin = pinOverride ?? String(Math.floor(1000 + Math.random() * 9000));
+      reconnectRef.current.auto = true;
+      if (!pinOverride) reconnectRef.current.attempts = 0;
+      clearPeerReconnect();
+      lastSessionRef.current = { role: 'host', pin };
+
+      const peer = new Peer(stagePeerId(pin), stagePeerOptions());
       peerRef.current = peer;
       setHostPin(pin);
 
       peer.on('open', () => {
+        if (peerRef.current !== peer) return;
         setPeerMode('host');
-        showToast(`Hosting Stage Sync — PIN: ${pin}`);
+        if (!pinOverride) showToast(`Hosting Stage Sync — PIN: ${pin}`);
       });
 
       peer.on('connection', (conn) => {
+        if (peerRef.current !== peer) return;
         hostConnsRef.current.push(conn);
         setConnectedCount(hostConnsRef.current.length);
+        heartbeatStopsRef.current.push(
+          attachStageHeartbeat(conn, () => {
+            try {
+              conn.close();
+            } catch {
+              // Already closed.
+            }
+          })
+        );
         conn.on('open', () => {
           const payload = buildStagePayload();
           if (payload) conn.send(payload);
@@ -550,16 +646,28 @@ export default function App() {
         });
       });
 
+      // The signalling socket can drop while the data channel stays up; revive
+      // it so the host keeps its PIN and can accept new devices.
+      peer.on('disconnected', () => tryReconnectSignalling(peer));
+
       peer.on('error', (err) => {
-        const pErr = err as { type?: string; message?: string };
-        if (pErr.type === 'unavailable-id' && retry < 4) {
+        if (peerRef.current !== peer) return;
+        const type = peerErrorType(err);
+        if (type === 'unavailable-id' && retry < 4) {
           startPeerHost(retry + 1);
-        } else {
-          showToast(`PeerJS Error: ${pErr.message || String(err)}`);
+          return;
         }
+        const message = (err as { message?: string }).message || String(err);
+        if (isRetryablePeerError(type)) {
+          showToast('Lost the pairing service. Reconnecting…');
+          tryReconnectSignalling(peer);
+          schedulePeerReconnect();
+          return;
+        }
+        showToast(`PeerJS Error: ${message}`);
       });
     },
-    [stopPeerSession, showToast, buildStagePayload]
+    [buildStagePayload, clearPeerReconnect, schedulePeerReconnect, showToast, teardownPeer]
   );
 
   const joinPeerHost = useCallback(
@@ -568,24 +676,52 @@ export default function App() {
         showToast('Enter a valid 4-digit PIN.');
         return;
       }
-      stopPeerSession();
-      const peer = new Peer();
+
+      const reconnecting =
+        reconnectRef.current.attempts > 0 || clientLinkedRef.current;
+      teardownPeer();
+      reconnectRef.current.auto = true;
+      clearPeerReconnect();
+      lastSessionRef.current = { role: 'client', pin };
+      if (!reconnecting) clientLinkedRef.current = false;
+
+      const peer = new Peer(stagePeerOptions());
       peerRef.current = peer;
       setHostPin(pin);
-      setJoinStatus(`Connecting to PIN ${pin}...`);
+      setJoinStatus(reconnecting ? `Rejoining PIN ${pin}...` : `Connecting to PIN ${pin}...`);
+
+      peer.on('disconnected', () => tryReconnectSignalling(peer));
 
       peer.on('open', () => {
-        const conn = peer.connect(`chordstand-pro-${pin}`, { reliable: true });
+        if (peerRef.current !== peer) return;
+        const conn = peer.connect(stagePeerId(pin), { reliable: true });
+        if (!conn) {
+          setJoinStatus('Could not start the connection. Retrying…');
+          schedulePeerReconnect();
+          return;
+        }
         clientConnRef.current = conn;
+        heartbeatStopsRef.current.push(
+          attachStageHeartbeat(conn, () => {
+            try {
+              conn.close();
+            } catch {
+              // Already closed.
+            }
+          })
+        );
+
         conn.on('open', () => {
+          reconnectRef.current.attempts = 0;
+          clientLinkedRef.current = true;
           setPeerMode('client');
           setJoinStatus(`Connected to Stage Leader (PIN ${pin})`);
-          showToast(`Joined Stage Sync PIN ${pin}`);
+          if (!reconnecting) showToast(`Joined Stage Sync PIN ${pin}`);
         });
 
         conn.on('data', (raw) => {
-          const msg = raw as StageSyncPayload;
-          if (!msg || msg.type !== 'stage-state' || !msg.song) return;
+          if (!isStageState(raw) || !raw.song) return;
+          const msg: StageSyncPayload = raw;
 
           setSongs((currSongs) => {
             const localMatch = currSongs.find((s) => s.id === msg.song.id);
@@ -627,19 +763,81 @@ export default function App() {
         });
 
         conn.on('close', () => {
-          setJoinStatus('Disconnected from leader.');
-          stopPeerSession();
+          clientConnRef.current = null;
+          if (peerRef.current !== peer || tearingDownRef.current) return;
+          if (!clientLinkedRef.current && reconnectRef.current.attempts === 0) {
+            setJoinStatus('Disconnected from leader.');
+            return;
+          }
+          setJoinStatus('Connection lost. Reconnecting…');
+          schedulePeerReconnect();
         });
       });
 
       peer.on('error', (err) => {
-        const pErr = err as { message?: string };
-        setJoinStatus(`Error: ${pErr.message || String(err)}`);
-        showToast(`Sync failed: ${pErr.message || String(err)}`);
+        if (peerRef.current !== peer) return;
+        const type = peerErrorType(err);
+        const message = (err as { message?: string }).message || String(err);
+
+        if (type === 'peer-unavailable') {
+          if (clientLinkedRef.current || reconnectRef.current.attempts > 0) {
+            setJoinStatus('Leader not answering. Reconnecting…');
+            schedulePeerReconnect();
+          } else {
+            setJoinStatus('No session answered that PIN.');
+            showToast('No session is hosting that PIN.');
+          }
+          return;
+        }
+
+        if (isRetryablePeerError(type)) {
+          if (clientLinkedRef.current || reconnectRef.current.attempts > 0) {
+            setJoinStatus('Lost the pairing service. Reconnecting…');
+            tryReconnectSignalling(peer);
+            schedulePeerReconnect();
+          } else {
+            setJoinStatus(`Error: ${message}`);
+            showToast(`Sync failed: ${message}`);
+          }
+          return;
+        }
+
+        setJoinStatus(`Error: ${message}`);
+        showToast(`Sync failed: ${message}`);
       });
     },
-    [stopPeerSession, showToast]
+    [clearPeerReconnect, schedulePeerReconnect, showToast, teardownPeer]
   );
+
+  peerHandlersRef.current = {
+    host: (pin) => startPeerHost(0, pin),
+    join: (pin) => joinPeerHost(pin),
+  };
+
+  // A hotspot or Wi-Fi hand-off can fire online/offline without the data
+  // channel noticing. Nudge the retry loop when the network returns.
+  useEffect(() => {
+    const onOnline = () => {
+      if (!reconnectRef.current.auto) return;
+      const session = lastSessionRef.current;
+      if (session?.role !== 'client') return;
+      if (clientConnRef.current?.open) return;
+      reconnectRef.current.attempts = 0;
+      clearPeerReconnect();
+      schedulePeerReconnect();
+    };
+    const onOffline = () => {
+      if (!lastSessionRef.current) return;
+      setJoinStatus('Network lost. Reconnecting when it returns…');
+    };
+
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, [clearPeerReconnect, schedulePeerReconnect]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -857,8 +1055,16 @@ export default function App() {
                 <Menu className="w-3.5 h-3.5" />
                 Library
               </button>
-              <div className="font-display font-extrabold text-[15px] tracking-tight whitespace-nowrap shrink-0">
-                Chordstand Pro
+              <div className="leading-tight shrink-0">
+                <div className="font-display font-extrabold text-[15px] tracking-tight whitespace-nowrap">
+                  Chordstand Pro
+                </div>
+                <div
+                  className="text-[10px] font-medium tracking-wide whitespace-nowrap"
+                  style={{ color: 'var(--muted)' }}
+                >
+                  Created by Ray Foo
+                </div>
               </div>
             </div>
 

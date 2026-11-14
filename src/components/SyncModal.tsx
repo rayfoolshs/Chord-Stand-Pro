@@ -65,7 +65,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({
 
         <p className="text-xs mb-4 leading-relaxed" style={{ color: 'var(--muted)' }}>
           Mirror the active song, key/capo, section jumps, and live scroll position across bandmates&apos; tablets or
-          laptops over WebRTC.
+          laptops over WebRTC. A hotspot or Wi-Fi blip reconnects automatically; use Disconnect to stop retrying.
         </p>
 
         <div
