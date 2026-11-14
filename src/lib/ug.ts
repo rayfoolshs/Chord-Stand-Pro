@@ -62,10 +62,21 @@ export function parseUgPayload(text: string): UgPayload {
   return plausible ? { title, artist, body } : { title: '', artist: '', body: normalised.trim() };
 }
 
-/** The app's own URL without hash or query, used as the bookmarklet target. */
+/** Canonical Chord-Stand Pro deployment; bookmarklets always hand off here. */
+export const CHORDSTAND_PRO_URL = 'https://rayfoolshs.github.io/Chord-Stand-Pro/';
+
+/**
+ * Where a freshly built bookmarklet should send charts. Production always
+ * targets the Chord-Stand Pro deployment, while local development keeps using
+ * whatever origin the dev server is running on.
+ */
 export function appImportUrl(): string {
-  const url = new URL(window.location.href);
-  url.hash = '';
-  url.search = '';
-  return url.toString();
+  const { hostname } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '[::1]') {
+    const url = new URL(window.location.href);
+    url.hash = '';
+    url.search = '';
+    return url.toString();
+  }
+  return CHORDSTAND_PRO_URL;
 }

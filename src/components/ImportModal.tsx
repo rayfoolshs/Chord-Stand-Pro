@@ -345,8 +345,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({
               ref={bookmarkletRef}
               href="#"
               draggable
-              onClick={(e) => e.preventDefault()}
-              title="Drag me to your bookmarks bar"
+              onClick={(e) => {
+                e.preventDefault();
+                void copyBookmarklet();
+              }}
+              title="Click to copy, or drag to your bookmarks bar — sends charts to Chord-Stand Pro"
+              aria-label="Send chart to Chord-Stand Pro bookmarklet"
               className="px-3 py-2 rounded-lg border text-xs font-semibold inline-flex items-center gap-1.5 no-underline cursor-grab"
               style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}
             >
@@ -365,8 +369,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           </div>
           <p className="text-xs leading-relaxed mt-2 mb-0" style={{ color: 'var(--muted)' }}>
             Drag the first button to your bookmarks bar once. On a UG chart, run the bookmark and the
-            chart opens here in the preview. On iPad, save this page to Favourites, edit that bookmark
-            and paste the copied code as its address.
+            chart opens here in Chord-Stand Pro&apos;s preview — nothing is saved until you tap Import
+            Pasted Chart. On iPad, save this page to Favourites, edit that bookmark and paste the copied
+            code as its address. If you still have a bookmark from the older Chordstand app, delete it
+            first: old bookmarks open Chordstand, not Chord-Stand Pro.
             {bookmarkletMessage ? ` ${bookmarkletMessage}` : ''}
           </p>
         </div>

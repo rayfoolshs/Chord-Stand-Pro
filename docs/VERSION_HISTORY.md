@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ---
 
+## 0.2.3 — 2026-11-14
+
+### Changed
+
+- Ultimate Guitar bookmarklet now targets the canonical Chord-Stand Pro deployment (`https://rayfoolshs.github.io/Chord-Stand-Pro/`); local development still targets the dev server origin.
+- Clicking the bookmarklet button copies it to the clipboard; dragging it to the bookmarks bar still works.
+- Bookmarklet link is named, titled, and labelled "Send chart to Chord-Stand Pro".
+- Import hint now explains that bookmarks saved from the older Chordstand app open Chordstand and should be deleted before re-adding the Pro bookmarklet.
+- README import steps note the same re-creation step.
+
+### Fixed
+
+- Charts sent from the widget always land in Chord-Stand Pro's import preview instead of a bookmarked URL from a different deployment.
+
+---
+
 ## 0.2.2 — 2026-11-14
 
 ### Added
@@ -13,7 +29,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `README.md` with setup, features, import/sync instructions, and project layout.
 - `docs/BUILD_PLAN.md` covering architecture, delivery phases, release process, and test plan.
 - `docs/VERSION_HISTORY.md` (this file).
-- Chromium `favicon` is still absent; tracked as a future polish item.
 
 ### Changed
 

@@ -102,10 +102,12 @@ Google Drive sign-in uses `firebase-applet-config.json` in the repo root.
 Ultimate Guitar blocks automated downloads, so Chordstand Pro never fetches their pages. It works with text you can already see:
 
 1. Open **Import / OnSong**.
-2. Drag **Send chart to Chord-Stand Pro** to your bookmarks bar (or copy the bookmarklet).
+2. Click **Send chart to Chord-Stand Pro** to copy the bookmarklet, or drag it straight to your bookmarks bar.
 3. On a UG chord chart, run the bookmark.
-4. The chart opens in Chordstand Pro's import preview with title and artist filled in.
+4. The chart opens in Chord-Stand Pro's import preview with title and artist filled in.
 5. Review it and press **Import Pasted Chart** — nothing is saved before that.
+
+The bookmarklet always targets `https://rayfoolshs.github.io/Chord-Stand-Pro/`. If you still have a bookmark saved from the older **Chordstand** app, delete it first — that bookmark opens Chordstand, not Chord-Stand Pro.
 
 You can also paste a chart manually, use **Paste Clipboard**, or search UG and copy the chart.
 
