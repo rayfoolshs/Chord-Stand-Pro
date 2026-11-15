@@ -1,7 +1,7 @@
 /**
  * Helpers shared by the Ultimate Guitar import paths.
  *
- * Chord-Stand Pro never fetches Ultimate Guitar itself: their terms, robots
+ * Chord Stand Studio never fetches Ultimate Guitar itself: their terms, robots
  * rules and browser protections block that. Everything here works on text the
  * user can already see on the page.
  */
@@ -62,13 +62,13 @@ export function parseUgPayload(text: string): UgPayload {
   return plausible ? { title, artist, body } : { title: '', artist: '', body: normalised.trim() };
 }
 
-/** Canonical Chord-Stand Pro deployment; bookmarklets always hand off here. */
-export const CHORDSTAND_PRO_URL = 'https://rayfoolshs.github.io/Chord-Stand-Pro/';
+/** Canonical Chord Stand Studio deployment; bookmarklets always hand off here. */
+export const CHORDSTAND_STUDIO_URL = 'https://rayfoolshs.github.io/Chord-Stand-Studio/';
 
 /**
  * Where a freshly built bookmarklet should send charts. Production always
- * targets the Chord-Stand Pro deployment, while local development keeps using
- * whatever origin the dev server is running on.
+ * targets the Chord Stand Studio deployment, while local development keeps
+ * using whatever origin the dev server is running on.
  */
 export function appImportUrl(): string {
   const { hostname } = window.location;
@@ -78,5 +78,5 @@ export function appImportUrl(): string {
     url.search = '';
     return url.toString();
   }
-  return CHORDSTAND_PRO_URL;
+  return CHORDSTAND_STUDIO_URL;
 }

@@ -1,6 +1,6 @@
 # Build Plan
 
-Planning and delivery notes for **Chordstand Pro** (created by Ray Foo).
+Planning and delivery notes for **Chord Stand Studio** (created by Ray Foo).
 
 The app is a static, client-side build. Everything below ships as plain files through Vite; there is no application server in production.
 
@@ -66,7 +66,7 @@ The app is a static, client-side build. Everything below ships as plain files th
 ### Phase 3 — Import (done)
 
 - OnSong `.backup` / `.onsongarchive` / `.sqlite3` databases.
-- `.onsong`, `.chordpro`, `.cho`, `.pro`, `.txt`, Chordstand JSON backups.
+- `.onsong`, `.chordpro`, `.cho`, `.pro`, `.txt`, Chord Stand Studio JSON backups.
 - Ultimate Guitar text cleaner, search shortcut, clipboard paste.
 - Ultimate Guitar bookmarklet and `#ug=` hand-off into the preview.
 
@@ -150,7 +150,7 @@ These are ideas, not shipped behavior. Pick them up in order unless a gig demand
 ### Import
 
 - Import an OnSong backup with songs and setlists; verify counts and titles.
-- Import `.onsong`, `.chordpro`, `.cho`, `.txt`, and a Chordstand JSON backup.
+- Import `.onsong`, `.chordpro`, `.cho`, `.txt`, and a Chord Stand Studio JSON backup.
 - Paste a chart, then repeat with the UG cleaner; confirm metadata lines are stripped or applied.
 - Run the bookmarklet payload by opening `/#ug=<payload>`; confirm the modal opens, preview is filled, hash is cleared, and reload does not re-import.
 
@@ -173,7 +173,7 @@ These are ideas, not shipped behavior. Pick them up in order unless a gig demand
 | PeerJS public signalling/TURN outage | Retry with backoff; optional self-hosted relay via `VITE_TURN_*` |
 | Hotspot blocks the relay entirely | Documented limitation; no client-side fix can create a blocked path |
 | Ultimate Guitar markup changes break the bookmarklet | Chart extraction falls back from `pre` to `[class*="ChordSheet"]`; patch selectors when needed |
-| Browser storage eviction | Encourage Drive backups; data stays exportable as Chordstand JSON |
+| Browser storage eviction | Encourage Drive backups; data stays exportable as Chord Stand Studio JSON |
 | Vite 8 / Node version drift | CI pins Node 20; document Node 20.19+/22.12+ locally |
 
 ## Definition of done

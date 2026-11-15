@@ -1,4 +1,4 @@
-name: Deploy Chordstand Pro to GitHub Pages
+name: Deploy Chord Stand Studio to GitHub Pages
 
 on:
   push:

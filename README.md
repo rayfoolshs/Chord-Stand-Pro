@@ -1,16 +1,16 @@
-# Chordstand Studio
+# Chord Stand Studio
 
 **Created by Ray Foo**
 
 Stage-ready chord charts, setlists, imports, multi-device sync, and cloud backup for working musicians.
 
-**Live app:** https://rayfoolshs.github.io/Chord-Stand-Pro/
+**Live app:** https://rayfoolshs.github.io/Chord-Stand-Studio/
 
 ---
 
 ## What it does
 
-Chordstand Pro is a client-side React app for running a gig from a tablet or laptop. Charts live in the browser (IndexedDB); nothing is uploaded unless you explicitly back up to Google Drive.
+Chord Stand Studio is a client-side React app for running a gig from a tablet or laptop. Charts live in the browser (IndexedDB); nothing is uploaded unless you explicitly back up to Google Drive.
 
 ### Charts & stage tools
 
@@ -99,15 +99,15 @@ Google Drive sign-in uses `firebase-applet-config.json` in the repo root.
 
 ## Ultimate Guitar import
 
-Ultimate Guitar blocks automated downloads, so Chordstand Pro never fetches their pages. It works with text you can already see:
+Ultimate Guitar blocks automated downloads, so Chord Stand Studio never fetches their pages. It works with text you can already see:
 
 1. Open **Import / OnSong**.
-2. Click **Send chart to Chord-Stand Pro** to copy the bookmarklet, or drag it straight to your bookmarks bar.
+2. Click **Send chart to Chord Stand Studio** to copy the bookmarklet, or drag it straight to your bookmarks bar.
 3. On a UG chord chart, run the bookmark.
-4. The chart opens in Chord-Stand Pro's import preview with title and artist filled in.
+4. The chart opens in Chord Stand Studio's import preview with title and artist filled in.
 5. Review it and press **Import Pasted Chart** — nothing is saved before that.
 
-The bookmarklet always targets `https://rayfoolshs.github.io/Chord-Stand-Pro/`. If you still have a bookmark saved from the older **Chordstand** app, delete it first — that bookmark opens Chordstand, not Chord-Stand Pro.
+The bookmarklet always targets `https://rayfoolshs.github.io/Chord-Stand-Studio/`. If you still have a bookmark saved from the older **Chordstand** app, delete it first — that bookmark opens Chordstand, not Chord Stand Studio.
 
 You can also paste a chart manually, use **Paste Clipboard**, or search UG and copy the chart.
 

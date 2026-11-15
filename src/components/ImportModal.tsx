@@ -238,7 +238,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           <p className="text-xs leading-relaxed mb-3" style={{ color: 'var(--muted)' }}>
             OnSong <code>.backup</code> / <code>.onsongarchive</code> / <code>.sqlite3</code> (SQLite3 WASM parser),{' '}
             <code>.onsong</code>, <code>.chordpro</code>, <code>.cho</code>, <code>.pro</code>, <code>.txt</code>, or
-            Chordstand <code>.json</code> backups.
+            Chord Stand Studio <code>.json</code> backups.
           </p>
           <label
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold cursor-pointer"
@@ -349,13 +349,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 e.preventDefault();
                 void copyBookmarklet();
               }}
-              title="Click to copy, or drag to your bookmarks bar — sends charts to Chord-Stand Pro"
-              aria-label="Send chart to Chord-Stand Pro bookmarklet"
+              title="Click to copy, or drag to your bookmarks bar — sends charts to Chord Stand Studio"
+              aria-label="Send chart to Chord Stand Studio bookmarklet"
               className="px-3 py-2 rounded-lg border text-xs font-semibold inline-flex items-center gap-1.5 no-underline cursor-grab"
               style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}
             >
               <Grip className="w-3.5 h-3.5" />
-              Send chart to Chord-Stand Pro
+              Send chart to Chord Stand Studio
             </a>
             <button
               type="button"
@@ -369,10 +369,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           </div>
           <p className="text-xs leading-relaxed mt-2 mb-0" style={{ color: 'var(--muted)' }}>
             Drag the first button to your bookmarks bar once. On a UG chart, run the bookmark and the
-            chart opens here in Chord-Stand Pro&apos;s preview — nothing is saved until you tap Import
+            chart opens here in Chord Stand Studio&apos;s preview — nothing is saved until you tap Import
             Pasted Chart. On iPad, save this page to Favourites, edit that bookmark and paste the copied
             code as its address. If you still have a bookmark from the older Chordstand app, delete it
-            first: old bookmarks open Chordstand, not Chord-Stand Pro.
+            first: old bookmarks open Chordstand, not Chord Stand Studio.
             {bookmarkletMessage ? ` ${bookmarkletMessage}` : ''}
           </p>
         </div>

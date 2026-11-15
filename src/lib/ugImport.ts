@@ -2,7 +2,7 @@
  * Bridge for the optional Ultimate Guitar bookmarklet ("widget").
  *
  * The bookmarklet runs in the UG tab the user is already looking at: it reads
- * the chart element, builds a title/artist header and opens Chord-Stand Pro
+ * the chart element, builds a title/artist header and opens Chord Stand Studio
  * with the text in the URL fragment. The fragment is never sent to a server and
  * the chart still lands in the import preview, unsaved until the user confirms.
  */
@@ -83,7 +83,7 @@ export function takeQueuedUgImport(): string | null {
 
 /**
  * The bookmarklet that runs on the UG tab. It is user-initiated, touches only
- * the page already on screen, and stops at Chord-Stand Pro's import preview.
+ * the page already on screen, and stops at Chord Stand Studio's import preview.
  */
 export function buildUgBookmarklet(targetUrl: string): string {
   const target = `${targetUrl.replace(/#.*$/, '')}#ug=`;

@@ -1,8 +1,24 @@
 # Version History
 
-All notable changes to **Chordstand Pro**, created by Ray Foo.
+All notable changes to **Chord Stand Studio**, created by Ray Foo.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and semantic versioning (`MAJOR.MINOR.PATCH`).
+
+---
+
+## 0.3.0 — 2026-11-15
+
+### Changed
+
+- Renamed the app from **Chordstand Pro** to **Chord Stand Studio** throughout the interface, page title, social metadata, and docs.
+- Header brand now reads **Chord Stand Studio**; the **Created by Ray Foo** credit line is unchanged.
+- Canonical deployment and bookmarklet target is now `https://rayfoolshs.github.io/Chord-Stand-Studio/`.
+- Ultimate Guitar bookmarklet label is now "Send chart to Chord Stand Studio".
+- Import and Google Drive copy now refers to Chord Stand Studio backups.
+
+### Fixed
+
+- Bookmarklet constant renamed to `CHORDSTAND_STUDIO_URL` so the generated bookmarklet matches the current deployment.
 
 ---
 

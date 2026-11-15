@@ -1,5 +1,5 @@
 {
-  "name": "Chordstand Pro",
+  "name": "Chord Stand Studio",
   "description": "Stage chord chart viewer, transposer, setlist manager, OnSong importer, multi-device WebRTC stage sync, and Google Drive cloud backup.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

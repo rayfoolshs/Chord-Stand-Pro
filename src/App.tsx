@@ -1057,7 +1057,7 @@ export default function App() {
               </button>
               <div className="leading-tight shrink-0">
                 <div className="font-display font-extrabold text-[15px] tracking-tight whitespace-nowrap">
-                  Chordstand Pro
+                  Chord Stand Studio
                 </div>
                 <div
                   className="text-[10px] font-medium tracking-wide whitespace-nowrap"

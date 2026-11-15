@@ -52,7 +52,7 @@ export const DriveModal: React.FC<DriveModalProps> = ({
     try {
       const list = await listDriveBackups(tokenToUse);
       setFiles(list);
-      setStatusMsg(list.length ? '' : 'No Chordstand backups found in Google Drive yet.');
+      setStatusMsg(list.length ? '' : 'No Chord Stand Studio backups found in Google Drive yet.');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to list Drive files.';
       setStatusMsg(msg);
@@ -167,7 +167,7 @@ export const DriveModal: React.FC<DriveModalProps> = ({
         </div>
 
         <p className="text-xs mb-4 leading-relaxed" style={{ color: 'var(--muted)' }}>
-          Saves and restores only the backup files created by Chordstand Pro in your Google Drive.
+          Saves and restores only the backup files created by Chord Stand Studio in your Google Drive.
         </p>
 
         <div
