@@ -1,4 +1,4 @@
-# Chordstand Pro
+# Chordstand Studio
 
 **Created by Ray Foo**
 
