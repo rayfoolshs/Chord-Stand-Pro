@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ---
 
+## 0.4.0 — 2026-11-16
+
+### Added
+
+- In-app reference manual: the **Manual** button now opens a handbook modal instead of a PDF in a new tab.
+- Chapter chips (Cover, Contents, and Chapters 01–09) jump straight to the matching page.
+- Previous/Next paging, a page counter with the section title, and `←` / `→` / `PageUp` / `PageDown` keyboard navigation; `Esc` closes.
+- **Download PDF** keeps the original handbook available as a file.
+- Handbook pages are pre-rendered to `public/manual/page-NN.jpg` so the manual opens instantly and works offline.
+
+### Changed
+
+- Manual is themed with the app's day/night CSS variables, so it matches the stage theme.
+
+---
+
 ## 0.3.0 — 2026-11-15
 
 ### Changed

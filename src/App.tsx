@@ -32,6 +32,7 @@ import { ChartRenderer } from './components/ChartRenderer';
 import { GuitarChordSvg, PianoChordSvg } from './components/ChordDiagrams';
 import { DialogConfig, DialogModal } from './components/DialogModal';
 import { DriveModal } from './components/DriveModal';
+import { ManualModal } from './components/ManualModal';
 import { EditorPane } from './components/EditorPane';
 import { ImportModal } from './components/ImportModal';
 import { SyncModal } from './components/SyncModal';
@@ -138,6 +139,7 @@ export default function App() {
   const ugTokenRef = useRef(0);
   const [syncOpen, setSyncOpen] = useState(false);
   const [driveOpen, setDriveOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
   const [dialog, setDialog] = useState<DialogConfig | null>(null);
 
   // Toast
@@ -845,6 +847,17 @@ export default function App() {
     const onKeyDown = (e: KeyboardEvent) => {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === 'Escape') {
+        setFullscreen(false);
+        setImportOpen(false);
+        setSyncOpen(false);
+        setDriveOpen(false);
+        setManualOpen(false);
+        setDialog(null);
+        return;
+      }
+      // The handbook owns paging keys (arrows, PageUp/PageDown) while it is open.
+      if (manualOpen) return;
       if (e.key === ' ' || e.key.toLowerCase() === 'p') {
         e.preventDefault();
         setScrolling((s) => !s);
@@ -862,17 +875,11 @@ export default function App() {
         setFullscreen((f) => !f);
       } else if (e.key.toLowerCase() === 'l') {
         setSidebarCollapsed((c) => !c);
-      } else if (e.key === 'Escape') {
-        setFullscreen(false);
-        setImportOpen(false);
-        setSyncOpen(false);
-        setDriveOpen(false);
-        setDialog(null);
       }
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [stepSetlist, guardLock]);
+  }, [stepSetlist, guardLock, manualOpen]);
 
   // Unique chords for diagram strip
   const diagramChords = useMemo(() => {
@@ -1157,17 +1164,16 @@ export default function App() {
                 Print
               </button>
 
-              <a
-                href={new URL('Chord-Stand-Studio-User-Manual.pdf', document.baseURI).href}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Open the official user manual (PDF)"
-                className="px-2.5 py-1.5 rounded-lg border text-xs font-medium inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 no-underline"
-                style={{ background: 'var(--surface-2)', borderColor: 'var(--border)', color: 'var(--text)' }}
+              <button
+                type="button"
+                onClick={() => setManualOpen(true)}
+                title="Open the official user manual"
+                className="px-2.5 py-1.5 rounded-lg border text-xs font-medium inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 Manual
-              </a>
+              </button>
             </div>
           </header>
         )}
@@ -2049,6 +2055,8 @@ export default function App() {
         />
 
         <DialogModal dialog={dialog} onClose={() => setDialog(null)} />
+
+        <ManualModal open={manualOpen} onClose={() => setManualOpen(false)} />
 
         {/* Toast */}
         {toast && (

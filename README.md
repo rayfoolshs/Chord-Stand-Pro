@@ -24,6 +24,7 @@ Chord Stand Studio is a client-side React app for running a gig from a tablet or
 - Stage Lock to prevent accidental edits mid-song
 - Fullscreen stage view
 - Print / save-as-PDF for the current chart or a whole setlist packet
+- Built-in 16-page **Manual** handbook: chapter chips jump to a section, arrow keys page through it, and the PDF is downloadable
 - Day/night theme slider
 
 ### Library & setlists
@@ -148,6 +149,7 @@ src/
     ImportModal.tsx       file/paste/UG import UI
     SyncModal.tsx         Stage Sync pairing UI
     DriveModal.tsx        Google Drive backup/restore UI
+    ManualModal.tsx       in-app handbook (chapter chips + page images)
     DialogModal.tsx       confirm/choice dialogs
   lib/
     chartParser.ts        ChordPro + over-lyrics parser
@@ -159,6 +161,9 @@ src/
     ugImport.ts           UG bookmarklet + hash hand-off
     stageSync.ts          heartbeat, backoff, TURN options
   types/chordstand.ts     shared types
+public/
+  manual/page-NN.jpg      handbook pages served to the in-app manual
+  Chord-Stand-Studio-User-Manual.pdf   downloadable handbook
 ```
 
 ## Deployment
