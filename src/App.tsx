@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Peer, { DataConnection } from 'peerjs';
 import {
+  BookOpen,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -1155,6 +1156,18 @@ export default function App() {
                 <Printer className="w-3.5 h-3.5" />
                 Print
               </button>
+
+              <a
+                href={new URL('Chord-Stand-Studio-User-Manual.pdf', document.baseURI).href}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open the official user manual (PDF)"
+                className="px-2.5 py-1.5 rounded-lg border text-xs font-medium inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 no-underline"
+                style={{ background: 'var(--surface-2)', borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                Manual
+              </a>
             </div>
           </header>
         )}
